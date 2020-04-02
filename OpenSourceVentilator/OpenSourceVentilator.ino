@@ -179,391 +179,20 @@
 */
 
 
-
-//************************   DEVICE OPERATIONAL PARAMETERS   ************************  
-
-/*
-       WARNING : When changing min and max value, manually change the text in the SerialCommand procedure accordingly
-
-       The values are taken from various documents including :
-       https://www.gov.uk/government/publications/coronavirus-covid-19-ventilator-supply-specification/rapidly-manufactured-ventilator-system-specification
-       https://docs.google.com/document/d/1h77FkKXqPOwVqfOj-PIJSjYX9QiEx69Av2gYuzqZolw/edit#
-
-       some changes have been made to havee a lower default volume in case the machine is used 
-       with an infant to prevent damaging their lungs with an adult setting.
-*/
-
-#define minBPM                     10.0   // minimum respiratory speed
-#define defaultBPM                 20.0   // default respiratory speed
-#define stepBPM                     1.0   // adjustment step for respiratory speed
-#define maxBPM                     35.0   // maximum respiratory speed
-#define maxBPMchange                0.2   // maximum respiratory speed change in proportion of final value per beat (1=100%)
-#define minVolume                 100.0   // minimum respiratory volume in milliliters 
-#define defaultVolume             400.0   // default respiratory volume in milliliters 
-#define stepVolume                 20.0   // adjustment step for respiratory volume in milliliters 
-#define maxVolume                 800.0   // maximum respiratory volume in milliliters 
-#define maxVolumeChange             0.25  // maximum respiratory volume change in proportion of final value per beat (1=100%) 
-#define minCompression           1000.00  // minimum compression for the ambu-bag in Pa
-#define stepCompression           500.00  // adjustment step for compression for the ambu-bag in Pa
-#define defaultCompression       3000.00  // default compression for the ambu-bag in Pa
-#define maxCompression          20000.00  // maximum compression for the ambu-bag in Pa
-#define maxCompressionChange        0.5   // maximum compression for the ambu-bag change in proportion of final value per beat (1=100%)
-#define minSyncRatio                0.00  // minimum portion of the cycle for breath synchronisation
-#define stepSyncRatio               0.05  // adjustment step for portion of the cycle for breath synchronisation
-#define defaultSyncRatio            0.15  // default portion of the cycle for breath synchronisation
-#define maxSyncRatio                0.40  // maximum portion of the cycle for breath synchronisation
-#define minExpirationRatio          1.00  // minimum portion of the cycle for breath synchronisation
-#define stepExpirationRatio         0.2   // adjustment step for portion of the cycle for breath synchronisation
-#define defaultExpirationRatio      1.2   // default portion of the cycle for breath synchronisation
-#define maxExpirationRatio          3.00  // maximum portion of the cycle for breath synchronisation
-#define failVolumeRatio             0.90  // In CP mode, Alarm if pressure reached before that portion of programmed volume.
-
-
-
-#define ambientPressureFilter       0.02  // IIR filtering ratio (lower value produce longer time constant)
-#define avgPressureFilter           0.1   // IIR filtering ratio (lower value produce longer time constant)
-#define defaultPressure        101325.00  // Pressure in Pa returned when no sensor is found (1 atm)
-#define defaultAmbientPressure 101325.00  // assumed ambient pressure in Pa returned when no sensor is found (1 atm)
-#define defaultHumidity            50.00  // humidity in % RH returned when no sensor is found
-#define defaultTemperature         20.00  // temperature in °C returned when no sensor is found
-#define alarmCompressionValue       1.1   // if the pressure exceeds the presed value * alarmCompressionValue, 
-                                          // then trigger an alarm and stop the motor if needed  
-#define minAtmosphericPressure 60000     // minimum atmospheric pressure that would be considered valid                                           
-#define maxAtmosphericPressure 120000    // maximum atmospheric pressure that would be considered valid                                           
-
-
-
-/*******************************   MOTOR PARAMETERS   *******************************
- *    
- *     These values will be highly dependant on mechanical design.
- *     When modifying the values, always check with an oscilloscope that the movements completes    
- *     without overlaps and without too much idle time. 
- *     Also check that the motor can properly follow the speed acceleration required under load.
- *     Wrong values can cause unpredictables moves and motor stalls.
- *     The worst case scenario is at max BPM, with max volume, max sync period and max ratio
- *     With default parameters, the whole compression can become as short as 250 ms
- */
-
-#define motorSpeed               5000     // Speed for 1 liter/second
-#define motorAcceleration        8500     // Acceleration for 1 liter / second (inverse square of flow)
-#define motorMaxAcceleration    30000     // deceleration when pressure limit reached
-#define motorVolumeRatio            0.8   // Ratio of distance in steps to air volume in step per milliliter.
-                                          
-
-/*******************************   HARDWARE OPTIONS   *******************************
- *    
- *    It's normal for the program to not compile if some of these are undefined as they need an alternative
- *    
- */
-
-#define arduinoNano        // defines the board as an Arduino nano with with Atmega328P processor
-                           // You can define your own board and pinout.
-
-#define USBcontrol         // USB / serial Command line interface.
-                           // This allows complete control of all parameters.
-
-#define E2PROM             // Uses the internal EEPROM for parameter storage
-
-//#define TM1638Keyboard     // Use a TM1638 for the keyboard
-
-#define analogKeyboard
-
-//#define TM1638Display      // Use a TM1638 for the display
-
-#define PCF8574LCDDisplay  // Use a 2x16 characters LCD with a PCF8574 'backpack' as a display
-
-#define TM1638bargraph     // Use a TM1638 for the Led pressure bargraph
-
-#define ActiveBeeper       // Active beeper can be used on any pin. Passive beeper will require a PWM capable pin
-
-#define Led                // Led debugging / Signal (should be disabled if SPI peripherals are present)
-
-#define BoschBMxSensor     // Bosch Sensortech BMP280 or BME280
-
-//#define BoschBMP180Sensor  // Bosch Sensortech BMP180 
-
-//#define TwoPressureSensors // Double pressure sensor (one for barometric pressure)
-
-#define stepDirMotor       // Control the motor with step and Direction signals
-
-#define disableMotorctrl   // control moter activation / desactivation      
-
-//#define CurrentSense     // uncomment to add motor current sensing with the Allegromicro ACS712 sensor
-                           // This is not enabled by default as first test show the sensor is not sensitive
-                           // enough. Another sensor should probably be used.
-
-// # define watchdog       // WARNING: Do not enable this setting  while debugging, you might brick 
-                           // your dev. board. If this happens, you'll need to flash not just the 
-                           // bootloader, but the whole program space.
-                           // The problem is worse in Nanos with a bootloader that does not clear
-                           // the watchdog settings. 
-
-#define serialTelemetry    // Sends real time data about time, current breathing phase, motor position, pressure 
-                           // while the machine works in CSV format
-
-
-//************************************   DEBUGGING   *************************************
-
-// #define debug_0      // print data for each cycle
-// #define debug_1      // print data for user triggered cycle    
-// #define debug_2      // print data for 1 in 10 measurement cycles
-// #define debug_3      // print sensor datadata 
-// #define debug_4      // temperature / humidity / pressure 
-
-//#define debugAnalogKeyboard
-
-#define ArduinoPlotter  // This will turn on telemetry automatically
-                        // With this feature on, absolute pressure and motor speeds are scaled.  
-
-
-//******************************   IMPLIED DEFINITIONS  ********************************
-
-#ifdef BoschBMxSensor
-#ifndef I2C
-#define I2C
-#endif
-#endif
-
-#ifdef BoschBMP180Sensor
-#ifndef I2C
-#define I2C
-#endif
-#define dispMenus     // Alternate displays must also enable this
-#endif
-
-#ifdef PCF8574LCDDisplay
-#ifndef I2C
-#define I2C
-#endif
-#define dispMenus     // Alternate displays must also enable this
-#endif
-
-#ifdef  TM1638Keyboard
-#define TM1638
-#define isKeyboard    // Alternate keyboards must also enable this
-#endif
-
-#ifdef analogKeyboard
-#define isKeyboard    // Alternate keyboards must also enable this
-#endif
-
-#ifdef  TM1638Display
-#ifndef TM1638
-#define TM1638
-#endif
-#define dispMenus     // Alternate displays must also enable this
-#endif
-
-#ifdef  TM1638bargraph
-#ifndef TM1638
-#define TM1638
-#endif
-#define dispBargraph  // Alternate physical (LED) bargraphs must also enable this
-#endif
-
-
-#ifdef  ActiveBeeper
-#define Beeper
-#endif
-
-#ifdef  watchdog
-#define watchdogProtect          // This prevents the watchdog from being fired before watchdogDelay  
-                                 // To allow an new software to be uploaded     
-#define watchdogDelay      1000  // Maximum time before the watchdog times out and resets 
-#define watchdogStartDelay 8000  // Delay before the watchdog becomes active (used to have the time
-                                 // to reload the program if it hangs the controller. Only for development.
-#endif
-
-
-#ifndef analogKeyboard
-#undef debugAnalogKeyboard
-#endif
-
-#ifdef debugAnalogKeyboard
-#undef serialTelemetry
-#undef ArduinoPlotter
-#endif
-
-#ifdef ArduinoPlotter            // The plotter needs telemetry data
-#ifndef serialTelemetry
-#define serialTelemetry
-#endif
-#define arduinoPlotterPressureOffset 600  // Y axis offset for the pressure curve
-#define arduinoPlotterOffset         800  // Y offset for the data displayed once per cycle
-#define arduinoPlotterMotorOffset    25   // Y offset for the motor position (prevents shifts if undershoot)
-#undef debug_0
-#undef debug_1
-#undef debug_2
-#undef debug_3
-#undef debug_4
-#undef debug_5
-#undef debug_6
-#undef debug_7
-#undef debug_8
-#undef debug_9
-#undef debug_10
-#undef debug_11
-#undef debug_12
-#undef debug_13
-#undef debug_14
-#undef debug_15
-#undef debug_16
-#undef debug_17
-#undef debug_18
-#undef debug_19
-#endif
+#include "osv_config.h"
 
 //********************************   CONNECTION PINS   ********************************
 
-#ifdef arduinoNano // This configuration applies to an Arduino Nano controller with Atmega328P processor 
-
-#ifdef TM1638
-// Datasheet : https://csserver.evansville.edu/~mr63/Courses/Projects/TM1638en.pdf
-
-#define  pin_Strobe_TM         2
-#define  pin_Clock_TM          3
-#define  pin_DIO_TM            4
-#endif
-
-#ifdef analogKeyboard
-#define pin_analogKeyboard    A6
-#endif
-
-#ifdef I2C
-#define pin_SDA               A4
-#define pin_SCL               A5
-#endif
-
-#ifdef Beeper
-#define pin_Beep               8
-#endif
-
-#ifdef Led
-#define pin_LED               13
-#endif
-
-#ifdef stepDirMotor
-#define pin_Stepper_DIR        6
-#define pin_Stepper_Step       7
-#define StepGen
-#endif
-
-#ifdef disableMotorctrl
-#define pin_Stepper_Disable    5
-#endif
-
-#ifdef CurrentSense
-#define pin_current_Sense     A3  // do not use A6 or A7 presence detection needs a regular pin with pullup
-#endif
-
-#endif
+#include "arduino_nano.h"
+//#include "arduino_due.h"
 
 //*******************************   REQUIRED LIBRARIES   *******************************
 
-#ifdef TM1638                      // Keyboard / display / LED combo board
-#include <TM1638plus.h>            //  By Gavin Lyons - https://github.com/gavinlyonsrepo/TM1638plus
-#endif                      
-
-
-#ifdef PCF8574LCDDisplay           // LCD with PCF8574 "backpack"
-#include <LiquidCrystal_PCF8574.h> // Matthias Hertel - http://www.mathertel.de/Arduino/LiquidCrystal_PCF8574.aspx 
-#endif
-
-       
-#ifdef I2C
-#define jm_Wire                 // The jm_wire library corrects the longstanding I2C hanging problem with the arduino Wire library.
-#ifdef jm_Wire
-#include <jm_Wire.h>              // I2C protocol, contains a workaround for a longstanding issue with the Wire library
-                                  // by Jean-Marc Paratte - https://github.com/jmparatte/jm_Wire
-                                  // The library is optional during developpement (unless you encounter lockups)
-                                  // but must be used for any production software. To use it, you need to change
-                                  // the #include "Wire.h" line in all libraries that use the I2C bus.
-                                  // INFO:
-#else                             //  https://github.com/ermtl/Open-Source-Ventilator/blob/master/OpenSourceVentilator/README.md 
-#include <Wire.h>                 // I2C protocol (flawed library)
-#endif
-#endif
-
-// Add your sensor library routines here 
-
-#ifdef BoschBMxSensor           // Temperature / humidity / pressure
-#include <BME280I2C.h>          //  by Tyler Glenn - https://github.com/finitespace/BME280
-#define tempSensor              // contains a temperature sensor
-#define humiditySensor          // contains a humidity sensor
-#define pressureSensor          // contains a pressure sensor
-#endif               
-
-#ifdef BoschBMP180Sensor        // Temperature / pressure
-#include <BMP180I2C.h>          //  by Gregor Christandl - https://bitbucket.org/christandlg/bmp180mi/src/master/
-#define tempSensor              // contains a temperature sensor
-#define ambientPressureSensor   // contains a pressure sensor
-#endif               
-
-
-
-#ifdef currentSense
-#include <avr/sleep.h>          // Sleep management library
-#endif
-
-#ifdef E2PROM
-#include <EEPROM.h>             // read / write to the processor's internal EEPROM
-#endif
-
-#ifdef StepGen
-#include <AccelStepper.h>       // Stepper / servo library with step pulse / dir interface
-#endif                          //  By Mike McCauley - http://www.airspayce.com/mikem/arduino/AccelStepper
-
-#ifdef  watchdog
-#include <Adafruit_SleepyDog.h> // watchdog library by Adafruit   
-                                // https://github.com/adafruit/Adafruit_SleepyDog
-#endif
-
-#include "TimerOne.h"           // Timer component
-                                //  By Jesse Tane, Jérôme Despatis, Michael Polli, Dan Clemens, Paul Stroffregen
-                                //  https://playground.arduino.cc/Code/Timer1/
-
+#include "osv_libraries.h"
 
 //***************************************   END   ***************************************
 
-#ifdef TM1638Keyboard
-#define maxBtn  8   // should be 8 or 16
-#define btnPrev 7   // position for the 'Prev'  button
-#define btnNext 6   // position for the 'Next'  button
-#define btnDn   5   // position for the 'Down'  button
-#define btnUp   4   // position for the 'Up'    button
-#define btnOk   0   // position for the 'Enter' button
-#define debounce 3  // Keyboard debouncing
-#endif
-
-#ifdef analogKeyboard
-#define maxBtn  8   // should be 8 or 16
-#define btnPrev 3   // position for the 'Prev'  button
-#define btnNext 4   // position for the 'Next'  button
-#define btnDn   6   // position for the 'Down'  button
-#define btnUp   5   // position for the 'Up'    button
-#define btnOk   7   // position for the 'Enter' button
-#define debounce 3  // Keyboard debouncing
-const int KbdVals[] = {335,510,765,934,1022};
-const int KbdTols[] = {17,26,39,47,52};
-#define btns    5
-#define analogTol 0.05 // percentage of allowed error
-#endif
-
-
-#ifdef TM1638Display
-//#define dispBufferLength 12
-#endif
-#ifdef PCF8574LCDDisplay
-#define dispBufferLength 40
-#endif
-
-#ifdef TM1638
-TM1638plus tm(pin_Strobe_TM, pin_Clock_TM , pin_DIO_TM);  //Constructor object
-#endif
-
-#ifdef PCF8574LCDDisplay
-LiquidCrystal_PCF8574 lcd(0x27); // set the LCD address to 0x27 for a 16 chars and 2 line display
-#endif
+#include "osv_ui.h"
 
 
 #ifdef BoschBMxSensor
@@ -616,8 +245,6 @@ extern bool twi_writeTo_wait;         // Must be set to true to activate the tim
  #define motorDriverRecovery 20  // Allow some time (in miliseconds) for the motor driver to recover after being idle
 #endif
 
-#define std_dly 70  // display standard delay
-
 // #define sweep
 
 //#define serialVerbose   // Should the messages sent to the serial port be verbose or not
@@ -641,13 +268,8 @@ extern bool twi_writeTo_wait;         // Must be set to true to activate the tim
 
 boolean term,                  // true if the terminal is in human mode, false in machine mmode (not fully implemented)
         stopMove;              // Immediately stop motor movements (E-Stop)
-int     dispDelay,             // delay before the next display update or change
-        dispPhase,             // Main variable that controls the display and menu start machine. Contains the current screen number
-        dispCnt,               // Counter for dispDelay
-        dispParam,             // additional parameter used on certain display screens
-        timCnt,                // Timer interrupt cycle counter used to spread the load over time
+int     timCnt,                // Timer interrupt cycle counter used to spread the load over time
         breathGraphCnt,        // Counter for the visual blinking of the bargraph at each breathing cycle start
-        beepCnt,               // Counter for the delay before the end of the current beep (or 0). Time is in 10ms increments
         timerLvl,              // Count timer interrupt nesting and skips interface update when more than one
         syncDelay,             // Time (in ms) when the patient can symchronize the breathing cycle by inhaling (negative pressure)
         highPressureAlarmCnt;  // delay when the pressure is too high (>1.2x preset value) before an alarm is triggered
@@ -669,14 +291,11 @@ boolean doDisp,                // indicates if a display update is required or n
         I2CBusy,               // Tells whenever the sensors are used in the main lop so that the display can wait.
         telemetry,             // true if the serial telemetry mode is active, false otherwise.
         debug;                 // True if a debugging mode is used, false otherwise
-#ifdef dispMenus     // Alternate displays must also enable this
-char    disp[dispBufferLength];// Display data buffer
-#endif        
+        
 float   ambientPressure,       // Calculated ambient air pressure (averaged)
         pressure,              // Current pressure, as read from the sensor
         peakPressure,          // high pass filtered value of the pressure. Used to detect patient initiated breathing cycles
         avgPressure,           // Averaged pressure (used to limit the motor speed with short spikes filtered out
-        relPressure,           // relative pressure (measured pressure - ambient pressure)
         presM1,presM2,         // Memoies used to extrapolate pressure values when a new sensor measurement is not available
         temperature,           // temperature as read by the sensor, in Celsius
         temperature2,          // temperature as read by the 2nd sensor, in Celsius (if available)
@@ -701,25 +320,12 @@ long    tick,                  // counter used to trigger sensor measurements
         PEEP;                  // End of cycle pressure 
 float   BPM,                   // beats Per Minute. This is the minimum breathing rate, as defined by the user
         volume,                // Breathing volume per cycle in ml
-        compression,           // Max / target compression while inhaling
-        compressionScale,      // Scale of the compression relative to set value
-        volumeScale;           // Scale of the volume relative to set value
+        compression;           // Max / target compression while inhaling
 byte    sc,                    // counter for displaying debugging info about the sensors 
         breathPhase,           // Current phase of the breathing cycle;
-        barGraph,              // segments of the pressure bar graph
-        bargraphDot,           // rate indicator blinking segment on the bargraph
-        menuItem,              // Menu item currently being set by the user
-        alarm,                 // 0 normal, else alarm number
-        dispTick;              // Auxilary value for the dislpay. Can be used as a blink counter or similar 
-#ifdef isKeyboard        
-byte    keys[maxBtn],          // Debounced keyboard keys
-        kcnt[maxBtn],          // Keyboard debounce counter
-        mkeys[maxBtn];         // Key memory (allows to detect button transitions)
-#ifdef analogKeyboard
-int    analogKeys;            // Buffered analog value for keyboard
-#endif
-#endif
-
+        menuItem;              // Menu item currently being set by the user
+        
+        
 // Parameters saved to / recovered from EEPROM
 
 float   reqBPM;                // respiratory frequency
@@ -796,141 +402,6 @@ void meas()
  Serial.println(relPressure);
 #endif 
 }
-
-
-void setDisplayMenu(int ph, int dly=std_dly, int param=0) 
-{
- dispDelay=dly;   // duration for which the info will be displayed
- dispCnt=0;       // resets the display delay
- dispPhase=ph;    // which page should be displayed
- dispParam=param; // Page dependant additional parameter
- dispTick=0;      // Can be used as a blink counter or similar 
-}
-
-
-/*
- *   displays a set of bars representing the scaled pressure onscreen or with Leds
- */
-
-void displayBargraph (uint16_t value)
-{
-// add alternate ways of displaying the bargraph here
-  
-#ifdef TM1638bargraph
-  
-  for (uint8_t position = 0; position < 8; position++)
-   {
-    tm.setLED(position, value & 1);
-    value = value >> 1;
-   }
-#endif  
-}
-
-void updateBargraph()
-{
- if (CVmode)  // CV Mode - bargraph needs to show compression
-  {
-   bargraphDot=4;
-   byte b=1*(relPressure<-0.2*compressionScale)+2*(relPressure<-0.1*compressionScale)+4+  // Calculate the bargraph content from the pressure
-          8*(relPressure>0.1*compressionScale)+16*(relPressure>0.2*compressionScale)+
-          32*(relPressure>0.4*compressionScale)+64*(relPressure>0.8*compressionScale)+
-          128*(relPressure>compressionScale);
-   barGraph=b; 
-  } else
-  {           // CP Mode - bargraph needs to show volume 
-   bargraphDot=1;
-   float vol=stepper.currentPosition()/motorVolumeRatio;
-   int c=int ((7*vol)/volumeScale+1); // Always make sure at least the leftmost position is active
-   barGraph=0;
-   while (c--) barGraph+=barGraph+1;
-  }
-}
-
-void doDisplay()
-{
-#ifdef PCF8574LCDDisplay  
- byte b=0;
- int n=-1;
- while (b<39) if (disp[b++]=='\n')
-  {
-   disp[b-1]=0;  
-   n=b;
-  }
- disp[38]=0;   // Safety
- if (n!=1)
-  {
-    lcd.clear();
-    lcd.setCursor(1, 0);
-    lcd.print(disp);
-  }
- if (n>=0)
-  {
-   lcd.setCursor(1,1);
-   lcd.print(&disp[n]);  
-  }
-#endif
-#ifdef TM1638Display
- byte f=0;
- byte c=8;
- while (disp[f]) if (disp[f++]=='.') c++; // Calculates the stringt length without the dot characters
- disp[c]=0; // cut string length 
- tm.displayText(disp);   
- byte l=strlen(disp)-c+8;                 // Fills the right end of the display
- while (l<8) tm.displayASCII(l++,' ');
-#endif  
-}
-
-#ifdef isKeyboard
-/* returns a byte with a bit for each of up to 16 buttons. data is raw, not debounced
- *
- * ading another kind of keyboard should be done here 
- *
- */
-
-
-uint16_t readKeyboard()  
-{
-#ifdef TM1638Keyboard
- return tm.readButtons(); // returns a byte with values of button s8s7s6s5s4s3s2s1  
-#endif 
-#ifdef analogKeyboard
-byte b=1;
-byte c=btns;
-while (c--)
- {
-  if ((analogKeys>KbdVals[c]-KbdTols[c]) && (analogKeys<KbdVals[c]+KbdTols[c])) return b;
-  b+=b;
- }
-return 0; 
-#endif 
-}
-
-void debounceKeyboard()
-{
- uint16_t b = readKeyboard(); // returns a byte with values of button s8s7s6s5s4s3s2s1
- uint16_t c=maxBtn;
- uint16_t m=1;
- while (c--)  //Keyboard debounce
-  {
-   if (m & b)
-     {if (kcnt[c]>debounce) keys[c]=true; else kcnt[c]++;}
-    else
-     {if (kcnt[c]==0) keys[c]=false; else kcnt[c]--;}
-   m+=m; 
-  }
-}
-#endif
-
-#ifdef Beeper
-void beep(int lng,byte err)  // Launch a beep sound
-{
- if (err) alarm=err; 
- pinMode(pin_Beep, OUTPUT); 
- if (lng) digitalWrite(pin_Beep, LOW);  // active (inverted)
- beepCnt=max(beepCnt,lng);              //  if overlapping sounds, use the longest of them 
-}
-#endif
-
 
 typedef struct
   {
@@ -1485,7 +956,7 @@ void Timer()
          timCnt-=5;  // retry next time
         else
          {
-          doDisplay(); 
+          doDisplay(&display); 
           doDisp=false;
          } 
       }
@@ -1766,6 +1237,10 @@ if (sensAmbientPressure=bmp180.begin())
 #endif
 }
 
+#ifdef PCF8574LCDDisplay
+  LiquidCrystal_PCF8574 display;
+#endif
+
 void setup() {
  // put your setup code here, to run once:
  timerLvl=0;
@@ -1780,19 +1255,9 @@ void setup() {
 #ifdef I2C
  Wire.begin();
 #endif
-#ifdef PCF8574LCDDisplay
- Wire.beginTransmission(0x27);     // I2C Address of the PCF8574 chip 
- int error = Wire.endTransmission();
- if (error == 0) {
-   Serial.println("LCD");
-   lcd.begin(16, 2); // initialize the lcd
-   lcd.setBacklight(255);
-   lcd.home();
-   lcd.clear();
-  }
-   else 
-    Serial.print(error);
-#endif
+  
+  display = initDisplay(&Wire);
+  
  Timer1.initialize(200);  
  Timer1.attachInterrupt(Timer);
 #ifdef watchdog
@@ -2259,7 +1724,7 @@ void loop() {
     if (breathPhase==1) breathingInspiration ();
     breathOverpressureAlarm();
 #ifdef dispBargraph   
-    updateBargraph();   
+    updateBargraph(CVmode, stepper.currentPosition());   
 #endif      
 #ifdef isKeyboard      
     // Keyboard actions
